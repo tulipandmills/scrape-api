@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "start:dev --watch",
+      "problemMatcher": ["$tsc-watch"],
+      "group": "build",
+      "label": "npm: start:dev",
+      "detail": "nest start --watch"
+    }
+  ]
+}

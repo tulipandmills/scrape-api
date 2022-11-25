@@ -1,0 +1,58 @@
+{
+    "sites": {
+        "nos.nl": {
+            "url": "https://nos.nl",
+            "type": "html",
+            "enabled": "false",
+            "human": "NOS.nl"
+        },
+        "feeds.nos.nl": {
+            "url": "https://feeds.nos.nl/nosnieuwsalgemeen",
+            "type": "xml",
+            "enabled": "false",
+            "human": "NOS RSS feed"
+        },
+        "allekabels.nl": {
+            "url": "https://www.allekabels.nl",
+            "type": "false"
+        },
+        "wikipedia.org": {
+            "human": "Wikipedia (EN)",
+            "url": "https://en.wikipedia.org/w/api.php?action=query&origin=*&format=json&generator=search&gsrnamespace=0&gsrlimit=99&gsrsearch=xxx",
+            "placeholder": "xxx",
+            "type": "api",
+            "dataPath": "query.pages"
+        }
+    },
+    "conditions": {
+        "nos.nl": {
+            "exclude": [
+                "datetime",
+                "NOS op 3"
+            ]
+        },
+        "allekabels.nl": {}
+    },
+    "datastrategy": {
+        "nos.nl": {
+            "initialSelect": "li span",
+            "strategy": "2up-inner",
+            "domselect": "a"
+        },
+        "allekabels.nl": {
+            "strategy": "default",
+            "initialSelect": "div",
+            "initialSelectInnerText": "Aanbiedingen",
+            "childSelect": ".prodxs",
+            "titleSelector": ".prodxstitle",
+            "initialMetaSelector": "img",
+            "metaSelectorAttribute": "src"
+        }
+    },
+    "results": {
+        "wikipedia.org": {
+            "sortColumn": "title",
+            "sortDirection": "asc"
+        }
+    }
+}
