@@ -9,6 +9,7 @@
       "request": "launch",
       "name": "Launch Program",
       "program": "${workspaceFolder}/app.ts",
+      "runtimeExecutable": "/users/doranpauka/.nvm/versions/node/v14.21.1/bin/node",
       "preLaunchTask": "tsc: build - tsconfig.json",
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
       "outputCapture": "std",

@@ -43,29 +43,9 @@ app.all("*", (req, res, next) => {
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-
-
-
-
-
-
-// const get_wiki = (term) => {
-//     const url = `https://en.wikipedia.org/w/api.php?action=query&origin=*&format=json&generator=search&gsrnamespace=0&gsrlimit=99&gsrsearch=${term}`;
-//     return new Promise((resolve) => {
-//         let data = ''
-//         https.get(url, res => {
-//             res.on('data', chunk => { data += chunk })
-//             res.on('end', () => {
-//                 resolve(data);
-//             })
-//         })
-//     })
-// }
-
 app.get('/', function (req, res) {
     res.send('Hello root!');
 });
-
 
 app.get('/search/:sites/:term', (req, res) => {
     const sites = req.params.sites.split("|");
@@ -73,51 +53,6 @@ app.get('/search/:sites/:term', (req, res) => {
         res.send(r);
     });
 });
-
-// app.get('/wiki/:term', (req, res) => {
-//     get_wiki(req.params.term).then((r) => {
-//         res.send(r);
-//     });
-// });
-
-app.get('/use/', (req, res) => {
-    res.send('resources works');
-});
-
-app.get('/newtest', (req, res) => {
-
-    res.send('newtest');
-});
-
-app.get('/thing', (req, res) => {
-    const m = new mongoService();
-    m.connect('scrape', () => {
-        //log success
-    }, (err) => {
-        () => {
-            res.send(err);
-            console.error(err);
-            //todo: log error
-        }
-    }).then(() => {
-        m.insertDocument('scrape', { 'title': 'hello123' }).then(() => {
-            console.log('Document added',)
-            res.send('Done');
-        }, err => { res.send(err) });
-    })
-})
-
-app.get('/things', (req, res) => {
-    const m = new mongoService();
-    m.connect('scrape', () => {
-        m.findDocFieldsByFilter('scrape', { title: 'hello123' }).then((docs) => { res.send(docs) }, err => { res.send(err) });
-    }, (err) => {
-        () => {
-            console.error(err);
-            //todo: log error
-        }
-    });
-})
 
 app.get('/newsscrape/', async (req, res) => {
     const s = new scraper('nos.nl');

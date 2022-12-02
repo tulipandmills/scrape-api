@@ -68,6 +68,7 @@ export interface siteSettings {
     type: string
     placeholder?: string,
     dataPath?: string,
+    fieldMapFunction?: string,
     human?: string
 }
 

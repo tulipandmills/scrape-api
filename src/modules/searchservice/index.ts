@@ -1,6 +1,7 @@
 import { resultsSettings, scrapeSettings, siteSettings } from "../scrapesettings";
 const _ = require('lodash');
 const https = require('https');
+var convertXMLtoJS = require('xml-js');
 
 
 export class searchService {
@@ -31,6 +32,8 @@ export class searchService {
         }
         let url_with_term = siteSettings.url;
 
+
+        //TYPE API
         if (siteSettings.type === 'api') {
             if (typeof (siteSettings.placeholder) !== 'undefined') {
                 url_with_term = siteSettings.url.replace(siteSettings.placeholder, term);
@@ -38,6 +41,8 @@ export class searchService {
                 console.log('No placeholder was set for ', site);
             }
         }
+
+
 
 
 
@@ -55,6 +60,18 @@ export class searchService {
             }
         )
 
+        //PARSE XML
+        if (siteSettings.type === 'xml') {
+            returnData = convertXMLtoJS.xml2json(returnData, { compact: true });
+            try {
+                returnData = JSON.parse(returnData);
+                isJSON = true;
+            } catch (ex) {
+                console.log(ex);
+                return { success: false }
+            }
+        }
+
         //flattening
         if (siteSettings.dataPath && isJSON) {
             const dataPath = _.toPath(siteSettings.dataPath);
@@ -65,8 +82,22 @@ export class searchService {
 
 
         //sorting
-        if (isJSON)
+        if (isJSON && resultsSettings?.sortColumn && resultsSettings.sortDirection)
             returnData = _.orderBy(returnData, resultsSettings.sortColumn, resultsSettings.sortDirection);
+
+        //field mapping
+        if (siteSettings.fieldMapFunction) {
+            switch (siteSettings.fieldMapFunction) {
+                case "takeFirstObjectValue":
+
+                    returnData = _.map(returnData, function (r) {
+                        return _.map(r, (value, index) => {
+                            return { [index]: Object.values(value)[0] }
+                        })
+                    });
+                    break;
+            }
+        }
 
 
         return { "success": true, "data": returnData };
@@ -75,4 +106,5 @@ export class searchService {
 
 
     }
-}
+
+} 
