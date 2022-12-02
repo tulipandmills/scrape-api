@@ -4,10 +4,21 @@
     {
       "type": "npm",
       "script": "start:dev --watch",
-      "problemMatcher": ["$tsc-watch"],
+      "problemMatcher": [
+        "$tsc-watch"
+      ],
       "group": "build",
       "label": "npm: start:dev",
       "detail": "nest start --watch"
+    },
+    {
+      "type": "typescript",
+      "tsconfig": "tsconfig.json",
+      "problemMatcher": [
+        "$tsc"
+      ],
+      "group": "build",
+      "label": "tsc: build - tsconfig.json"
     }
   ]
 }

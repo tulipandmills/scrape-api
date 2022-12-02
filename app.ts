@@ -3,10 +3,10 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const morgan = require('morgan')
 
-import { mongoService } from './modules/mongoservice';
-import { scraper } from './modules/scraper';
-import { scrapeSettings } from './modules/scrapesettings';
-import { searchService } from './modules/searchservice';
+import { scraper } from './src/modules/scraper';
+import { scrapeSettings } from './src/modules/scrapesettings';
+import { searchService } from './src/modules/searchservice';
+import { mongoService } from './src/modules/mongoservice';
 
 let settings = new scrapeSettings();
 

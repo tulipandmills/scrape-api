@@ -6,6 +6,7 @@
     "sourceMap": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "incremental": true
+    "incremental": true,
+    "lib":["ES2018"]
   }
 }
