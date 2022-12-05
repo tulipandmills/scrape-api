@@ -14,8 +14,6 @@ let settings = new scrapeSettings();
 const app = express();
 
 
-
-
 morgan.token('params', req => {
     return JSON.stringify(req.params)
 })
@@ -47,12 +45,29 @@ app.get('/', function (req, res) {
     res.send('Hello root!');
 });
 
-app.get('/search/:sites/:term', (req, res) => {
+app.get('/search/:sites/:term', async (req, res) => {
     const sites = req.params.sites.split("|");
-    search.doSearch(req.params.term, sites[0]).then((r) => {
-        res.send(r);
+    let data = [];
+    let ps = [];
+    for (const site of sites) {
+        ps.push(search.doSearch(req.params.term, site).then(r => {
+            if (r.success) {
+                r.data.forEach(element => {
+                    if (Array.isArray(element)) {
+                        data.push(element);
+                    } else {
+                        data.push([element]);
+                    }
+                });
+            }
+        }))
+    }
+    await Promise.all(ps).then(r => {
+        console.log('Done');
     });
+    res.send({ 'data': data, 'success': true })
 });
+
 
 app.get('/newsscrape/', async (req, res) => {
     const s = new scraper('nos.nl');
