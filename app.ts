@@ -48,7 +48,7 @@ app.get('/', function (req, res) {
 app.get('/search/:sites/:term', async (req, res) => {
     const sites = req.params.sites.split("|");
     let data = [];
-    let headers = [];
+    let headers = ['site'];
     let resultSettings = [];
     let ps = [];
     let splitIndex = 0;
@@ -69,6 +69,8 @@ app.get('/search/:sites/:term', async (req, res) => {
                             data.push(element);
                         }
                     });
+
+
 
                     //Field replaces
                     let siteSettings = settings.getResultSettings(site);
@@ -113,6 +115,17 @@ app.get('/search/:sites/:term', async (req, res) => {
                         }
                     });
                     headers = Object.keys(u);
+
+                    //Add the source as header
+
+
+                    for (let i = splitIndex; i < data.length - splitIndex; i++) {
+                        data[i]['site'] = site;
+                    }
+
+
+
+
                     splitIndex += data.length;
                 } else {
                     data = [];
@@ -123,6 +136,7 @@ app.get('/search/:sites/:term', async (req, res) => {
     await Promise.all(ps).then(r => {
         console.log('Done');
     });
+
     res.send({ 'data': data, 'headers': headers, 'success': true, 'resultSettings': resultSettings })
 });
 
