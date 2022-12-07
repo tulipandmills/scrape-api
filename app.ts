@@ -48,7 +48,9 @@ app.get('/', function (req, res) {
 app.get('/search/:sites/:term', async (req, res) => {
     const sites = req.params.sites.split("|");
     let data = [];
+    let headers = [];
     let ps = [];
+    let splitIndex = 0;
     for (const site of sites) {
         ps.push(search.doSearch(req.params.term, site).then(r => {
             if (r.success) {
@@ -59,13 +61,58 @@ app.get('/search/:sites/:term', async (req, res) => {
                         data.push([element]);
                     }
                 });
+
+                //Field replaces
+                let siteSettings = settings.getResultSettings(site);
+                if (siteSettings?.fieldReplace) {
+                    siteSettings.fieldReplace.forEach(r => {
+                        data.forEach(d => {
+                            if (d[0][r.key]) {
+                                d[0][r.key] = r.value.replace("$placeholder", d[0][r.key])
+                            }
+                        })
+                    })
+                }
+
+
+                let siteHeaders = [];
+                //JSON type headers
+                siteHeaders = Object.keys(data[splitIndex]);
+                if (typeof (siteHeaders) === 'undefined' || siteHeaders.length === 0 || siteHeaders[0] === '0') {
+                    siteHeaders = Object.keys(data[splitIndex][0])
+                    if (typeof (siteHeaders) === 'undefined' || siteHeaders.length <= 1 || siteHeaders[0] === '0') {
+                        //XML type headers
+                        siteHeaders = [];
+                        data[splitIndex].map((r: any, index) => {
+
+                            const str = Object.keys(r)[index];
+                            siteHeaders.push(typeof (str) === 'string' ? str : Object.keys(r)[0]);
+                        })
+                    }
+                }
+                if (siteHeaders.length === 1 && siteHeaders[0]?.length > 1) {
+                    headers.push(siteHeaders[0]);
+                } else {
+                    headers = [...headers, ...siteHeaders];
+                }
+
+
+                //make unique
+                let u: any = {};
+                headers.forEach(function (i: string) {
+                    if (!u[i]) {
+                        u[i] = true;
+                    }
+                });
+                headers = Object.keys(u);
+                splitIndex += data.length;
             }
         }))
     }
     await Promise.all(ps).then(r => {
         console.log('Done');
     });
-    res.send({ 'data': data, 'success': true })
+    res.send({ 'data': data, 'headers': headers, 'success': true })
 });
 
 
