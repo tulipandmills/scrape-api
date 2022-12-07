@@ -56,9 +56,9 @@ app.get('/search/:sites/:term', async (req, res) => {
             if (r.success) {
                 r.data.forEach(element => {
                     if (Array.isArray(element)) {
-                        data.push(element);
+                        data.push(resultArrayToObject(element));
                     } else {
-                        data.push([element]);
+                        data.push(element);
                     }
                 });
 
@@ -67,8 +67,8 @@ app.get('/search/:sites/:term', async (req, res) => {
                 if (siteSettings?.fieldReplace) {
                     siteSettings.fieldReplace.forEach(r => {
                         data.forEach(d => {
-                            if (d[0][r.key]) {
-                                d[0][r.key] = r.value.replace("$placeholder", d[0][r.key])
+                            if (d[r.key]) {
+                                d[r.key] = r.value.replace("$placeholder", d[r.key])
                             }
                         })
                     })
@@ -114,6 +114,14 @@ app.get('/search/:sites/:term', async (req, res) => {
     });
     res.send({ 'data': data, 'headers': headers, 'success': true })
 });
+
+const resultArrayToObject = (data) => {
+    let o = {};
+    data.map(function (item) {
+        Object.assign(o, item)
+    })
+    return o;
+}
 
 
 app.get('/newsscrape/', async (req, res) => {
