@@ -81,6 +81,7 @@ export class searchService {
         }
 
 
+
         //sorting
         if (isJSON && resultsSettings?.sortColumn && resultsSettings.sortDirection)
             returnData = _.orderBy(returnData, resultsSettings.sortColumn, resultsSettings.sortDirection);
@@ -99,6 +100,22 @@ export class searchService {
             }
         }
 
+
+        //initial filtering
+        if (siteSettings.useTermAsInitialFilter) {
+            returnData = _.filter(returnData, (data) => {
+                let found = false;
+                data.forEach((item: any) => {
+
+                    if (Object.values(item)[0].toString().indexOf(term) > -1) {
+                        found = true;
+                    }
+
+
+                })
+                return found;
+            });
+        }
 
         return { "success": true, "data": returnData };
 

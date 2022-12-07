@@ -69,7 +69,8 @@ export interface siteSettings {
     placeholder?: string,
     dataPath?: string,
     fieldMapFunction?: string,
-    human?: string
+    human?: string,
+    useTermAsInitialFilter?: boolean
 }
 
 enum directions {
