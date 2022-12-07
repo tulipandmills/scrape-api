@@ -107,7 +107,7 @@ export class searchService {
                 let found = false;
                 data.forEach((item: any) => {
 
-                    if (Object.values(item)[0].toString().indexOf(term) > -1) {
+                    if (Object.values(item)[0].toString().toLocaleLowerCase().indexOf(term.toLocaleLowerCase()) > -1) {
                         found = true;
                     }
 
@@ -117,7 +117,7 @@ export class searchService {
             });
         }
 
-        return { "success": true, "data": returnData };
+        return { "success": true, "data": returnData, "resultSettings": resultsSettings };
 
 
 

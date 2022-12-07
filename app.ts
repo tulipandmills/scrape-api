@@ -49,11 +49,18 @@ app.get('/search/:sites/:term', async (req, res) => {
     const sites = req.params.sites.split("|");
     let data = [];
     let headers = [];
+    let resultSettings = [];
     let ps = [];
     let splitIndex = 0;
     for (const site of sites) {
         ps.push(search.doSearch(req.params.term, site).then(r => {
             if (r.success) {
+
+                //put settings to response
+                resultSettings.push({ [site]: r.resultSettings });
+
+
+                //put data to response
                 if (r.data.length > 0) {
                     r.data.forEach(element => {
                         if (Array.isArray(element)) {
@@ -116,7 +123,7 @@ app.get('/search/:sites/:term', async (req, res) => {
     await Promise.all(ps).then(r => {
         console.log('Done');
     });
-    res.send({ 'data': data, 'headers': headers, 'success': true })
+    res.send({ 'data': data, 'headers': headers, 'success': true, 'resultSettings': resultSettings })
 });
 
 const resultArrayToObject = (data) => {
