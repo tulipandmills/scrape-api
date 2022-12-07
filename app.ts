@@ -54,58 +54,62 @@ app.get('/search/:sites/:term', async (req, res) => {
     for (const site of sites) {
         ps.push(search.doSearch(req.params.term, site).then(r => {
             if (r.success) {
-                r.data.forEach(element => {
-                    if (Array.isArray(element)) {
-                        data.push(resultArrayToObject(element));
+                if (r.data.length > 0) {
+                    r.data.forEach(element => {
+                        if (Array.isArray(element)) {
+                            data.push(resultArrayToObject(element));
+                        } else {
+                            data.push(element);
+                        }
+                    });
+
+                    //Field replaces
+                    let siteSettings = settings.getResultSettings(site);
+                    if (siteSettings?.fieldReplace) {
+                        siteSettings.fieldReplace.forEach(r => {
+                            data.forEach(d => {
+                                if (d[r.key]) {
+                                    d[r.key] = r.value.replace("$placeholder", d[r.key])
+                                }
+                            })
+                        })
+                    }
+
+
+                    let siteHeaders = [];
+                    //JSON type headers
+                    siteHeaders = Object.keys(data[splitIndex]);
+                    if (typeof (siteHeaders) === 'undefined' || siteHeaders.length === 0 || siteHeaders[0] === '0') {
+                        siteHeaders = Object.keys(data[splitIndex][0])
+                        if (typeof (siteHeaders) === 'undefined' || siteHeaders.length <= 1 || siteHeaders[0] === '0') {
+                            //XML type headers
+                            siteHeaders = [];
+                            data[splitIndex].map((r: any, index) => {
+
+                                const str = Object.keys(r)[index];
+                                siteHeaders.push(typeof (str) === 'string' ? str : Object.keys(r)[0]);
+                            })
+                        }
+                    }
+                    if (siteHeaders.length === 1 && siteHeaders[0]?.length > 1) {
+                        headers.push(siteHeaders[0]);
                     } else {
-                        data.push(element);
+                        headers = [...headers, ...siteHeaders];
                     }
-                });
-
-                //Field replaces
-                let siteSettings = settings.getResultSettings(site);
-                if (siteSettings?.fieldReplace) {
-                    siteSettings.fieldReplace.forEach(r => {
-                        data.forEach(d => {
-                            if (d[r.key]) {
-                                d[r.key] = r.value.replace("$placeholder", d[r.key])
-                            }
-                        })
-                    })
-                }
 
 
-                let siteHeaders = [];
-                //JSON type headers
-                siteHeaders = Object.keys(data[splitIndex]);
-                if (typeof (siteHeaders) === 'undefined' || siteHeaders.length === 0 || siteHeaders[0] === '0') {
-                    siteHeaders = Object.keys(data[splitIndex][0])
-                    if (typeof (siteHeaders) === 'undefined' || siteHeaders.length <= 1 || siteHeaders[0] === '0') {
-                        //XML type headers
-                        siteHeaders = [];
-                        data[splitIndex].map((r: any, index) => {
-
-                            const str = Object.keys(r)[index];
-                            siteHeaders.push(typeof (str) === 'string' ? str : Object.keys(r)[0]);
-                        })
-                    }
-                }
-                if (siteHeaders.length === 1 && siteHeaders[0]?.length > 1) {
-                    headers.push(siteHeaders[0]);
+                    //make unique
+                    let u: any = {};
+                    headers.forEach(function (i: string) {
+                        if (!u[i]) {
+                            u[i] = true;
+                        }
+                    });
+                    headers = Object.keys(u);
+                    splitIndex += data.length;
                 } else {
-                    headers = [...headers, ...siteHeaders];
+                    data = [];
                 }
-
-
-                //make unique
-                let u: any = {};
-                headers.forEach(function (i: string) {
-                    if (!u[i]) {
-                        u[i] = true;
-                    }
-                });
-                headers = Object.keys(u);
-                splitIndex += data.length;
             }
         }))
     }
