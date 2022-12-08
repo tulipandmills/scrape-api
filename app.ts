@@ -76,17 +76,7 @@ app.get('/search/:sites/:term', async (req, res) => {
 
 
 
-                    //Field replaces
-                    let siteSettings = settings.getResultSettings(site);
-                    if (siteSettings?.fieldReplace) {
-                        siteSettings.fieldReplace.forEach(r => {
-                            data.forEach(d => {
-                                if (d[r.key]) {
-                                    d[r.key] = r.value.replace("$placeholder", d[r.key])
-                                }
-                            })
-                        })
-                    }
+
 
 
                     let siteHeaders = [];
@@ -124,10 +114,23 @@ app.get('/search/:sites/:term', async (req, res) => {
                     });
                     headers = Object.keys(u);
 
-                    //Add the source as header
+
+
+
+                    //Site specific result modifications
+                    //Add the source as header and do field replaces
+                    let siteSettings = settings.getResultSettings(site);
                     for (let i = splitIndex; i < data.length; i++) {
                         data[i]['site'] = site;
+                        if (siteSettings?.fieldReplace) {
+                            siteSettings.fieldReplace.forEach(r => {
+                                if (data[i][r.key]) {
+                                    data[i][r.key] = r.value.replace("$placeholder", data[i][r.key])
+                                }
+                            })
+                        }
                     }
+
 
 
 
