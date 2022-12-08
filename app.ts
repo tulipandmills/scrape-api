@@ -70,6 +70,10 @@ app.get('/search/:sites/:term', async (req, res) => {
                         }
                     });
 
+                    if (splitIndex > data.length) {
+                        splitIndex = data.length;
+                    }
+
 
 
                     //Field replaces
@@ -87,7 +91,11 @@ app.get('/search/:sites/:term', async (req, res) => {
 
                     let siteHeaders = [];
                     //JSON type headers
-                    siteHeaders = Object.keys(data[splitIndex]);
+                    try {
+                        siteHeaders = Object.keys(data[splitIndex]);
+                    } catch (err) {
+                        console.error(err)
+                    }
                     if (typeof (siteHeaders) === 'undefined' || siteHeaders.length === 0 || siteHeaders[0] === '0') {
                         siteHeaders = Object.keys(data[splitIndex][0])
                         if (typeof (siteHeaders) === 'undefined' || siteHeaders.length <= 1 || siteHeaders[0] === '0') {
