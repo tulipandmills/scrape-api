@@ -1,6 +1,7 @@
 import { resultsSettings, scrapeSettings, siteSettings } from "../scrapesettings";
 const _ = require('lodash');
 const https = require('https');
+const { JSDOM } = require('jsdom')
 var convertXMLtoJS = require('xml-js');
 
 
@@ -34,17 +35,13 @@ export class searchService {
 
 
         //TYPE API
-        if (siteSettings.type === 'api') {
+        if (siteSettings.type === 'api' || siteSettings.type === 'html') {
             if (typeof (siteSettings.placeholder) !== 'undefined') {
                 url_with_term = siteSettings.url.replace(siteSettings.placeholder, term);
             } else {
                 console.log('No placeholder was set for ', site);
             }
         }
-
-
-
-
 
         let returnData;
         let isJSON = false;
@@ -65,6 +62,73 @@ export class searchService {
             returnData = convertXMLtoJS.xml2json(returnData, { compact: true });
             try {
                 returnData = JSON.parse(returnData);
+                isJSON = true;
+            } catch (ex) {
+                console.log(ex);
+                return { success: false }
+            }
+        }
+
+        //PARSE HTML
+        if (siteSettings.type === 'html') {
+            const { document } = new JSDOM(returnData).window
+            const siteStrategy = this.settings.getSiteStrategy(site);
+            const nodeList = [...document.querySelectorAll(siteStrategy.initialSelect)];
+            const initialSelector = nodeList.filter((node) => {
+                console.log(node.className)
+                return (node.className.split(" ").indexOf(siteStrategy.initialSelectClass) > -1)
+            });
+
+            if (initialSelector) {
+                let childList;
+                if (siteStrategy.childSelect.indexOf(".") === 0) {
+                    childList = document.getElementsByClassName(siteStrategy.childSelect.substring(1))
+                } else if (siteStrategy.childSelect.indexOf("#") === 0) {
+                    childList = document.getElementsById(siteStrategy.childSelect.substring(1))
+                } else {
+                    childList = document.getElementsByTagName(siteStrategy.childSelect)
+                }
+
+                let items = [];
+                [...childList].map((child) => {
+                    let title;
+                    if (siteStrategy.titleSelector.indexOf(".") === 0) {
+                        title = child.getElementsByClassName(siteStrategy.titleSelector.substring(1))[0]?.innerHTML;
+                    } else if (siteStrategy.titleSelector.indexOf("#") === 0) {
+                        title = child.getElementsById(siteStrategy.titleSelector.substring(1))[0]?.innerHTML;
+                    } else {
+                        title = document.getElementsByTagName(siteStrategy.titleSelector)
+                    }
+                    let metaParent
+                    let metaTag
+                    if (siteStrategy.initialMetaSelector.indexOf(".") === 0) {
+                        metaParent = siteStrategy.initialMetaSelector.substring(1);
+                        metaTag = child.getElementsByClassName(metaParent)[0]
+                    }
+                    else if (siteStrategy.initialMetaSelector.indexOf("#") === 0) {
+                        metaParent = siteStrategy.initialMetaSelector.substring(1);
+                        metaTag = child.getElementsById(metaParent)[0]
+                    }
+                    else {
+                        metaParent = siteStrategy.initialMetaSelector;
+                        metaTag = child.getElementsByTagName(metaParent)[0]
+                    }
+                    const meta = metaTag.getAttribute(siteStrategy.metaSelectorAttribute)
+                    items.push({ title: title, meta: meta })
+                })
+                returnData = items;
+            }
+            else {
+                console.error(`Initial selector ${initialSelector} did not match for ${site}`)
+                returnData = null;
+            }
+
+
+            try {
+                if (typeof (returnData) !== 'object') {
+                    returnData = JSON.parse(returnData);
+                }
+
                 isJSON = true;
             } catch (ex) {
                 console.log(ex);

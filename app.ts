@@ -117,16 +117,14 @@ app.get('/search/:sites/:term', async (req, res) => {
                     headers = Object.keys(u);
 
                     //Add the source as header
-
-
-                    for (let i = splitIndex; i < data.length - splitIndex; i++) {
+                    for (let i = splitIndex; i < data.length; i++) {
                         data[i]['site'] = site;
                     }
 
 
 
 
-                    splitIndex += data.length;
+                    splitIndex = data.length + 1;
                 } else {
                     data = [];
                 }
