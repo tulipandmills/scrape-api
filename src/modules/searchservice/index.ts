@@ -5,6 +5,8 @@ const { JSDOM } = require('jsdom')
 var convertXMLtoJS = require('xml-js');
 
 
+
+
 export class searchService {
     settings = new scrapeSettings();
     constructor() {
@@ -71,33 +73,33 @@ export class searchService {
 
         //PARSE HTML
         if (siteSettings.type === 'html') {
-            const { document } = new JSDOM(returnData).window
+            const _jsdom = new JSDOM(returnData);
+            const $ = require('jquery')(_jsdom.window);
+
             const siteStrategy = this.settings.getSiteStrategy(site);
-            const nodeList = [...document.querySelectorAll(siteStrategy.initialSelect)];
-            const initialSelector = nodeList.filter((node) => {
-                console.log(node.className)
-                return (node.className.split(" ").indexOf(siteStrategy.initialSelectClass) > -1)
-            });
+            const initialSelector = $("." + siteStrategy.initialSelectClass);
+
+
 
             if (initialSelector) {
                 let childList;
                 if (siteStrategy.childSelect.indexOf(".") === 0) {
-                    childList = document.getElementsByClassName(siteStrategy.childSelect.substring(1))
+                    childList = $().find(siteStrategy.childSelect)
                 } else if (siteStrategy.childSelect.indexOf("#") === 0) {
-                    childList = document.getElementsById(siteStrategy.childSelect.substring(1))
+                    childList = $().getElementsById(siteStrategy.childSelect.substring(1))
                 } else {
-                    childList = document.getElementsByTagName(siteStrategy.childSelect)
+                    childList = $(initialSelector.find(siteStrategy.childSelect))
                 }
 
                 let items = [];
                 [...childList].map((child) => {
                     let title;
                     if (siteStrategy.titleSelector.indexOf(".") === 0) {
-                        title = child.getElementsByClassName(siteStrategy.titleSelector.substring(1))[0]?.innerHTML;
+                        title = $(child).find(siteStrategy.titleSelector)?.html();
                     } else if (siteStrategy.titleSelector.indexOf("#") === 0) {
                         title = child.getElementsById(siteStrategy.titleSelector.substring(1))[0]?.innerHTML;
                     } else {
-                        title = document.getElementsByTagName(siteStrategy.titleSelector)
+                        title = $().getElementsByTagName(siteStrategy.titleSelector)
                     }
                     let metaParent
                     let metaTag
@@ -113,7 +115,13 @@ export class searchService {
                         metaParent = siteStrategy.initialMetaSelector;
                         metaTag = child.getElementsByTagName(metaParent)[0]
                     }
-                    const meta = metaTag.getAttribute(siteStrategy.metaSelectorAttribute)
+                    let meta
+                    try {
+                        metaTag.getAttribute(siteStrategy.metaSelectorAttribute)
+                    } catch (ex) {
+                        console.error(ex);
+                    }
+
                     items.push({ title: title, meta: meta })
                 })
                 returnData = items;
