@@ -57,11 +57,23 @@ export class searchService {
                 }
 
             }
+
+
         )
+
+        //flattening
+        if (siteSettings.dataPath && isJSON) {
+            const dataPath = _.toPath(siteSettings.dataPath);
+            if (dataPath.length > 0) {
+                returnData = _.get(returnData, dataPath);
+            }
+        }
 
         //PARSE XML
         if (siteSettings.type === 'xml') {
             returnData = convertXMLtoJS.xml2json(returnData, { compact: true });
+
+
             try {
                 returnData = JSON.parse(returnData);
                 isJSON = true;
@@ -81,7 +93,11 @@ export class searchService {
 
 
 
-            if (initialSelector) {
+            if (typeof (initialSelector) !== 'undefined') {
+                if (initialSelector.length === 0) {
+                    console.log('Initial selector not found, might be 0 results')
+                    return { 'success': true, "data": [] };
+                }
                 let childList;
                 if (siteStrategy.childSelect.indexOf(".") === 0) {
                     childList = $().find(siteStrategy.childSelect)
@@ -143,16 +159,6 @@ export class searchService {
                 return { success: false }
             }
         }
-
-        //flattening
-        if (siteSettings.dataPath && isJSON) {
-            const dataPath = _.toPath(siteSettings.dataPath);
-            if (dataPath.length > 0) {
-                returnData = _.get(returnData, dataPath);
-            }
-        }
-
-
 
         //sorting
         if (isJSON && resultsSettings?.sortColumn && resultsSettings.sortDirection)

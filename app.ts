@@ -74,11 +74,6 @@ app.get('/search/:sites/:term', async (req, res) => {
                         splitIndex = data.length;
                     }
 
-
-
-
-
-
                     let siteHeaders = [];
                     //JSON type headers
                     try {
@@ -113,9 +108,6 @@ app.get('/search/:sites/:term', async (req, res) => {
                         }
                     });
                     headers = Object.keys(u);
-
-
-
 
                     //Site specific result modifications
                     //Add the source as header and do field replaces
@@ -157,57 +149,11 @@ const resultArrayToObject = (data) => {
     return o;
 }
 
-
-app.get('/newsscrape/', async (req, res) => {
-    const s = new scraper('nos.nl');
-    const items = await s.news();
-
-    const m = new mongoService();
-    m.connect('scrape', () => {
-        items.forEach((item) => {
-            m.findDocFieldsByFilter('scrape', { title: item.title }).then((docs) => {
-                if (docs.length == 0) {
-                    m.insertDocument('scrape', { title: item.title, data: item.data }).then(() => {
-                        console.log('Added', item)
-                    })
-                }
-            }, err => { res.send(err) });
-        })
-    }, (err) => { console.error(err) })
-    res.send('news scrape done');
-});
-
-
-app.get('/configuredscrape1/', async (req, res) => {
-    const s = new scraper('allekabels.nl');
-    const items = await s.scrape();
-    // const m = new mongoService();
-    // m.connect('scrape', () => {
-    //     items.forEach((item) => {
-    //         m.findDocFieldsByFilter('scrape', { title: item.title }).then((docs) => {
-    //             if (docs.length == 0) {
-    //                 m.insertDocument('scrape', { title: item.title, data: item.data }).then(() => {
-    //                     console.log('Added', item)
-    //                 })
-    //             }
-    //         }, err => { res.send(err) });
-    //     })
-    // }, (err) => { console.error(err) })
-    res.send('one scrape done (allekabels)');
-});
-
-
 app.get('/config', async (req, res) => {
     settings.loadConfigFile();
     console.log('Config file reloaded');
     res.send('Config file reloaded');
 });
-
-// app.get('/settings/:site/:datas', async (req, res) => {
-//     const datasAsArray = req.params.datas.split("|");
-//     console.log(`Sending settings for site ${req.params.site}, taking datas: ${datasAsArray}`);
-//     res.send(settings.getSiteSettings(req.params.site, datasAsArray));
-// });
 
 app.get('/sites/meta', async (req, res) => {
     console.log(`Sending meta data for all sites`);
