@@ -76,6 +76,12 @@ export class searchService {
 
             try {
                 returnData = JSON.parse(returnData);
+                if (siteSettings.dataPath) {
+                    const dataPath = _.toPath(siteSettings.dataPath);
+                    if (dataPath.length > 0) {
+                        returnData = _.get(returnData, dataPath);
+                    }
+                }
                 isJSON = true;
             } catch (ex) {
                 console.log(ex);
@@ -100,9 +106,9 @@ export class searchService {
                 }
                 let childList;
                 if (siteStrategy.childSelect.indexOf(".") === 0) {
-                    childList = $().find(siteStrategy.childSelect)
+                    childList = $(initialSelector).find(siteStrategy.childSelect)
                 } else if (siteStrategy.childSelect.indexOf("#") === 0) {
-                    childList = $().getElementsById(siteStrategy.childSelect.substring(1))
+                    childList = $(initialSelector).getElementsById(siteStrategy.childSelect.substring(1))
                 } else {
                     childList = $(initialSelector.find(siteStrategy.childSelect))
                 }
@@ -117,6 +123,12 @@ export class searchService {
                     } else {
                         title = $().getElementsByTagName(siteStrategy.titleSelector)
                     }
+                    if (typeof (title) === "undefined") {
+                        console.log("title not found in ", site)
+                        return;
+                    }
+
+
                     let metaParent
                     let metaTag
                     if (siteStrategy.initialMetaSelector.indexOf(".") === 0) {
@@ -133,7 +145,13 @@ export class searchService {
                     }
                     let meta
                     try {
-                        metaTag.getAttribute(siteStrategy.metaSelectorAttribute)
+                        if (typeof (metaTag) !== "undefined") {
+                            meta = metaTag.getAttribute(siteStrategy.metaSelectorAttribute)
+                        } else {
+                            console.log('metaData not found in ', site)
+                            return;
+                        }
+
                     } catch (ex) {
                         console.error(ex);
                     }

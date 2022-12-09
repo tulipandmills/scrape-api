@@ -122,14 +122,9 @@ app.get('/search/:sites/:term', async (req, res) => {
                             })
                         }
                     }
-
-
-
-
-
                     splitIndex = data.length + 1;
                 } else {
-                    data = [];
+                    console.log('No data for', site);
                 }
             }
         }))
